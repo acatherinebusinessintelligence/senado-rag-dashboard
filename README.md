@@ -1,47 +1,53 @@
-# 🧠 Senado RAG Dashboard
+# 🏛️ Senado RAG Dashboard
 
-Sistema interactivo para el análisis de proyectos de ley y actividad legislativa en Colombia usando Inteligencia Artificial.
+Sistema de análisis legislativo basado en **RAG (Retrieval-Augmented Generation)**, que permite explorar proyectos de ley, plenarias y comportamiento de senadores mediante búsqueda semántica, evidencia documental y analítica visual.
 
-## 🚀 ¿Qué hace este proyecto?
+---
 
-Este dashboard permite:
+## 🌐 Demo visual del proyecto
 
-- 🔎 Búsqueda semántica sobre proyectos de ley (RAG)
-- 🏛️ Análisis de participación de senadores
-- 📊 Visualización de afinidad temática
-- 🔗 Relación entre proyectos de ley y plenarias
-- 🧠 Exploración de información legislativa con IA
+👉 **Explorar la landing del sistema**  
+https://acatherinebusinessintelligence.github.io/senado-rag-dashboard/#vision
 
-## 🏗️ Arquitectura
+---
 
-- **RAG (Retrieval-Augmented Generation)** con ChromaDB
-- **Embeddings** con Sentence Transformers
-- **Visualización** con Plotly
-- **Interfaz** con Streamlit
-- **Procesamiento de datos** con Pandas y NLP
+## 🎯 ¿Qué resuelve?
 
-## 🧩 Componentes
+La información legislativa suele ser:
 
-- Corpus de proyectos de ley
-- Corpus de plenarias
-- Índice vectorial (Chroma)
-- Roles enriquecidos de senadores
-- Fotos y metadatos
+- dispersa  
+- extensa  
+- difícil de interpretar rápidamente  
 
-## ⚠️ Nota sobre datos
+Este proyecto transforma esos datos en una **experiencia navegable y accionable**, permitiendo:
 
-Este repositorio no incluye:
+- entender proyectos de ley en contexto  
+- cruzar información con plenarias  
+- analizar comportamiento legislativo  
+- explorar relaciones entre actores políticos  
 
-- `artifacts/`
-- `data/`
-- `fotos/`
+---
 
-Debido a su tamaño y naturaleza.
+## 🔍 Capacidades principales
 
-## 🛠️ Instalación
+### 1. Búsqueda semántica (RAG)
+- Consultas en lenguaje natural  
+- Recuperación de evidencia relevante  
+- Uso de embeddings + ChromaDB  
 
-```bash
-python -m venv .venv
-.\.venv\Scripts\activate
-pip install -r requirements.txt
+### 2. Visual analytics
+- Métricas de relevancia  
+- Gráficos interpretables  
+- Rankings y tendencias  
 
+### 3. Exploración de senadores
+- Perfil enriquecido  
+- Relación con proyectos de ley  
+- Mapas y grafos temáticos  
+
+---
+
+## 🧠 Arquitectura
+
+```text
+Ingesta de datos → Normalización → Embeddings → ChromaDB → Dashboard (Streamlit)
