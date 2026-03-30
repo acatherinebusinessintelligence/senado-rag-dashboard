@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+artifacts/
+data/
+fotos/
+*.parquet
+*.csv
+*.json
+*.db
+*.sqlite
+*.sqlite3
+.env
+.cache/
+models/
