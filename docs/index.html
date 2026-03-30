@@ -4,253 +4,584 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Senado RAG Dashboard</title>
-
+  <meta name="description" content="Sistema de análisis legislativo con IA basado en RAG, visual analytics y exploración de proyectos de ley, plenarias y senadores." />
   <style>
     :root{
-      --bg:#07111f;
-      --card:#0f1c31;
+      --bg:#08111f;
+      --bg-2:#0d1728;
+      --panel:#0f1c31;
+      --panel-2:#12233e;
       --text:#eef4ff;
-      --muted:#a9bbd6;
-      --line:rgba(255,255,255,.08);
+      --muted:#9fb3d1;
+      --line:rgba(255,255,255,.09);
       --accent:#4cc9f0;
       --accent-2:#8b5cf6;
+      --accent-3:#22c55e;
+      --danger:#ff5a5f;
+      --shadow:0 18px 50px rgba(0,0,0,.30);
+      --radius:24px;
+      --radius-sm:18px;
+      --max:1180px;
     }
 
     *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
     body{
       margin:0;
-      font-family: Inter, system-ui;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color:var(--text);
-      background: radial-gradient(circle at top, #0f172a, #020617);
+      background:
+        radial-gradient(circle at 10% 10%, rgba(76,201,240,.12), transparent 25%),
+        radial-gradient(circle at 85% 15%, rgba(139,92,246,.10), transparent 25%),
+        linear-gradient(180deg,#07101d 0%, #091427 45%, #07101d 100%);
+      line-height:1.55;
     }
 
-    .wrap{max-width:1200px;margin:auto;padding:0 20px}
+    img{max-width:100%;display:block}
+    a{text-decoration:none;color:inherit}
+    .wrap{max-width:var(--max);margin:0 auto;padding:0 22px}
 
-    /* NAV */
     .nav{
-      position:sticky;top:0;
-      background:rgba(7,17,31,.7);
-      backdrop-filter:blur(10px);
+      position:sticky;top:0;z-index:40;
+      backdrop-filter: blur(14px);
+      background:rgba(8,17,31,.70);
       border-bottom:1px solid var(--line);
-      z-index:10;
     }
-
     .nav-inner{
-      display:flex;justify-content:space-between;
-      padding:15px 0;
+      display:flex;align-items:center;justify-content:space-between;
+      gap:18px;padding:14px 0;
+    }
+    .brand{
+      display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.2px;
+    }
+    .brand-icon{
+      width:38px;height:38px;border-radius:12px;display:grid;place-items:center;
+      background:linear-gradient(135deg,var(--accent),var(--accent-2));
+      color:#07111f;font-size:18px;box-shadow:var(--shadow);
+      flex:0 0 auto;
+    }
+    .nav-links{
+      display:flex;gap:8px;flex-wrap:wrap;
+    }
+    .nav-links a{
+      color:var(--muted);
+      padding:9px 12px;border-radius:999px;font-size:14px;transition:.2s ease;
+    }
+    .nav-links a:hover{
+      color:var(--text);background:rgba(255,255,255,.05);
     }
 
-    .nav a{color:var(--muted);margin-left:15px;text-decoration:none}
-
-    /* HERO */
     .hero{
+      padding:58px 0 28px;
+    }
+    .hero-grid{
       display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:40px;
-      padding:60px 0;
+      grid-template-columns:minmax(0,1.03fr) minmax(0,.97fr);
+      gap:28px;
       align-items:center;
     }
-
+    .eyebrow{
+      display:inline-flex;align-items:center;gap:10px;
+      padding:10px 14px;border:1px solid var(--line);border-radius:999px;
+      color:#d9e8ff;background:rgba(255,255,255,.03);
+      font-size:14px;margin-bottom:18px;
+    }
+    .eyebrow-dot{
+      width:10px;height:10px;border-radius:50%;
+      background:linear-gradient(135deg,var(--accent),var(--accent-3));
+      box-shadow:0 0 0 6px rgba(76,201,240,.12);
+    }
     h1{
-      font-size:48px;
-      margin:0 0 20px;
+      margin:0 0 16px;
+      font-size:clamp(2.4rem,5vw,4.8rem);
+      line-height:.96;letter-spacing:-.05em;
+      max-width:11ch;
     }
-
-    .lead{color:var(--muted)}
-
+    .lead{
+      margin:0;
+      color:var(--muted);
+      font-size:clamp(1rem,1.8vw,1.16rem);
+      max-width:62ch;
+    }
+    .hero-actions{
+      display:flex;gap:14px;flex-wrap:wrap;
+      margin-top:24px;
+    }
     .btn{
-      display:inline-block;
-      padding:12px 20px;
-      border-radius:10px;
+      display:inline-flex;align-items:center;justify-content:center;
+      min-height:48px;padding:12px 18px;border-radius:15px;
+      font-weight:800;border:1px solid var(--line);
+      transition:.2s ease;
+    }
+    .btn-primary{
       background:linear-gradient(135deg,var(--accent),var(--accent-2));
-      color:#000;
-      font-weight:bold;
-      margin-top:20px;
+      color:#07101d;border:none;
+      box-shadow:var(--shadow);
     }
-
-    /* CARDS */
-    .features{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:20px;
+    .btn-secondary{
+      color:var(--text);background:rgba(255,255,255,.04);
     }
+    .btn:hover{transform:translateY(-1px)}
 
     .card{
-      background:var(--card);
-      padding:20px;
-      border-radius:15px;
+      background:linear-gradient(180deg,var(--panel),var(--panel-2));
       border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
     }
-
-    /* SHOWCASE */
-    .showcase{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
-      gap:24px;
+    .hero-shot{
+      padding:14px;
+      overflow:hidden;
     }
-
-    .shot{
-      background:var(--card);
-      padding:12px;
-      border-radius:16px;
+    .hero-shot .frame{
+      border-radius:18px;
+      overflow:hidden;
       border:1px solid var(--line);
-      transition:.2s;
+      background:#08111d;
+      aspect-ratio: 16 / 10;
     }
-
-    .shot:hover{
-      transform:scale(1.02);
-    }
-
-    .shot img{
+    .hero-shot img{
       width:100%;
-      border-radius:12px;
+      height:100%;
+      object-fit:cover;
+      object-position:center top;
     }
 
-    section{padding:40px 0}
+    .mini-metrics{
+      display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+      margin-top:18px;
+    }
+    .metric{
+      padding:18px;
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--line);
+      border-radius:18px;
+    }
+    .metric .label{
+      color:var(--muted);font-size:13px;margin-bottom:8px;
+    }
+    .metric .value{
+      font-size:1.55rem;font-weight:900;letter-spacing:-.03em;
+    }
 
-    h2{margin-bottom:20px}
+    section{padding:34px 0}
+    .section-head{
+      display:flex;justify-content:space-between;align-items:end;gap:18px;flex-wrap:wrap;
+      margin-bottom:20px;
+    }
+    .section-head h2{
+      margin:0;
+      font-size:clamp(1.55rem,2.4vw,2.5rem);
+      letter-spacing:-.04em;
+    }
+    .section-head p{
+      margin:0;color:var(--muted);max-width:64ch;
+    }
 
+    .feature-grid{
+      display:grid;grid-template-columns:repeat(3,1fr);gap:18px;
+    }
+    .feature{
+      padding:22px;
+    }
+    .icon{
+      width:44px;height:44px;border-radius:14px;
+      display:grid;place-items:center;
+      background:linear-gradient(135deg,rgba(76,201,240,.22),rgba(139,92,246,.20));
+      margin-bottom:14px;font-size:20px;
+    }
+    .feature h3{
+      margin:0 0 8px;font-size:1.08rem;
+    }
+    .feature p{
+      margin:0;color:var(--muted);
+    }
+
+    .gallery{
+      display:grid;grid-template-columns:repeat(12,1fr);gap:20px;
+    }
+    .gallery-item{
+      grid-column:span 6;
+      padding:12px;
+      overflow:hidden;
+    }
+    .gallery-item.wide{grid-column:span 12}
+    .gallery-item .media{
+      border-radius:16px;overflow:hidden;border:1px solid var(--line);
+      background:#08111d;
+      aspect-ratio:16 / 10;
+    }
+    .gallery-item.tall .media{aspect-ratio: 4 / 3}
+    .gallery-item img{
+      width:100%;height:100%;object-fit:cover;object-position:center top;
+      transition:transform .25s ease;
+    }
+    .gallery-item:hover img{transform:scale(1.02)}
+    .gallery-item h3{
+      margin:14px 4px 6px;font-size:1.02rem;
+    }
+    .gallery-item p{
+      margin:0 4px 2px;color:var(--muted);font-size:.95rem;
+    }
+
+    .timeline{
+      display:grid;grid-template-columns:repeat(5,1fr);gap:14px;
+    }
+    .step{
+      padding:18px;
+    }
+    .step-num{
+      width:34px;height:34px;border-radius:50%;
+      background:linear-gradient(135deg,var(--accent),var(--accent-2));
+      color:#08111d;display:grid;place-items:center;
+      font-weight:900;margin-bottom:12px;
+    }
+    .step h3{margin:0 0 8px;font-size:1rem}
+    .step p{margin:0;color:var(--muted);font-size:.95rem}
+
+    .stack{
+      display:flex;flex-wrap:wrap;gap:10px;
+    }
+    .stack span{
+      padding:10px 13px;border-radius:999px;
+      background:rgba(255,255,255,.04);border:1px solid var(--line);
+      color:#dce8fb;font-size:14px;
+    }
+
+    .cta{
+      padding:28px;
+      border-radius:26px;
+      background:linear-gradient(135deg,rgba(76,201,240,.12),rgba(139,92,246,.12));
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+    }
     .footer{
+      padding:22px 0 48px;
+      color:var(--muted);font-size:14px;
       text-align:center;
-      color:var(--muted);
-      padding:40px 0;
     }
 
-    @media(max-width:768px){
-      .hero{grid-template-columns:1fr}
-      .features{grid-template-columns:1fr}
+    @media (max-width: 1080px){
+      .hero-grid,.feature-grid,.timeline{grid-template-columns:1fr 1fr}
+      .timeline .step:last-child{grid-column:span 2}
     }
-
+    @media (max-width: 820px){
+      .hero-grid,.feature-grid,.timeline,.mini-metrics{grid-template-columns:1fr}
+      .gallery-item,.gallery-item.wide{grid-column:span 12}
+      .nav-inner{align-items:flex-start}
+      .hero{padding-top:36px}
+      h1{max-width:none}
+    }
+    @media (max-width: 560px){
+      .wrap{padding:0 16px}
+      .nav-links{gap:4px}
+      .nav-links a{padding:8px 10px;font-size:13px}
+      .btn{width:100%}
+      .hero-actions{display:grid;grid-template-columns:1fr}
+    }
   </style>
 </head>
-
 <body>
 
-<!-- NAV -->
-<div class="nav">
-  <div class="wrap nav-inner">
-    <div>🏛️ Senado RAG</div>
-    <div>
-      <a href="#features">Funciones</a>
-      <a href="#capturas">Sistema</a>
-      <a href="#stack">Stack</a>
+  <nav class="nav">
+    <div class="wrap nav-inner">
+      <div class="brand">
+        <div class="brand-icon">🏛️</div>
+        <div>Senado RAG Dashboard</div>
+      </div>
+      <div class="nav-links">
+        <a href="#vision">Visión</a>
+        <a href="#funciones">Funciones</a>
+        <a href="#capturas">Capturas</a>
+        <a href="#arquitectura">Arquitectura</a>
+        <a href="#stack">Stack</a>
+      </div>
     </div>
-  </div>
-</div>
+  </nav>
 
-<!-- HERO -->
-<div class="wrap hero">
+  <header class="hero wrap" id="vision">
+    <div class="hero-grid">
+      <div>
+        <div class="eyebrow">
+          <span class="eyebrow-dot"></span>
+          IA aplicada al análisis legislativo
+        </div>
+        <h1>De datos legislativos a inteligencia accionable</h1>
+        <p class="lead">
+          Explora proyectos de ley, plenarias y comportamiento legislativo con una experiencia
+          visual más clara, apoyada en búsqueda semántica, evidencia documental y analítica interactiva.
+        </p>
 
-  <div>
-    <h1>De datos legislativos a inteligencia accionable</h1>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="https://github.com/acatherinebusinessintelligence/senado-rag-dashboard" target="_blank" rel="noreferrer">
+            Ver repositorio
+          </a>
+          <a class="btn btn-secondary" href="#capturas">
+            Explorar sistema
+          </a>
+        </div>
 
-    <p class="lead">
-      Explora proyectos de ley, plenarias y comportamiento legislativo usando IA,
-      búsqueda semántica y analítica visual.
-    </p>
+        <div class="mini-metrics">
+          <div class="metric">
+            <div class="label">Cobertura funcional</div>
+            <div class="value">PL + plenarias</div>
+          </div>
+          <div class="metric">
+            <div class="label">Capa analítica</div>
+            <div class="value">RAG + visual</div>
+          </div>
+          <div class="metric">
+            <div class="label">Exploración</div>
+            <div class="value">Senadores</div>
+          </div>
+        </div>
+      </div>
 
-    <a class="btn" href="https://github.com/acatherinebusinessintelligence/senado-rag-dashboard">
-      Ver repositorio
-    </a>
-  </div>
-
-  <img src="images/01_home.png">
-</div>
-
-<!-- PROBLEMA -->
-<section class="wrap">
-  <h2>¿Qué problema resuelve?</h2>
-  <p class="lead">
-    La información del Senado es extensa, fragmentada y difícil de analizar.
-    Este sistema convierte documentos en conocimiento navegable con IA.
-  </p>
-</section>
-
-<!-- FEATURES -->
-<section id="features" class="wrap">
-  <h2>🚀 Funcionalidades</h2>
-
-  <div class="features">
-
-    <div class="card">
-      <h3>🔎 Búsqueda RAG</h3>
-      <p class="lead">Consulta proyectos con lenguaje natural.</p>
+      <div class="card hero-shot">
+        <div class="frame">
+          <img src="images/01_home.png" alt="Vista principal del dashboard">
+        </div>
+      </div>
     </div>
+  </header>
 
-    <div class="card">
-      <h3>📊 Visual Analytics</h3>
-      <p class="lead">Métricas y gráficos del comportamiento legislativo.</p>
+  <main class="wrap">
+    <section>
+      <div class="section-head">
+        <div>
+          <h2>¿Qué problema resuelve?</h2>
+          <p>
+            La información legislativa suele estar dispersa, ser extensa y difícil de interpretar rápidamente.
+            Este sistema convierte corpus documentales en una experiencia navegable y útil para análisis político,
+            investigación y exploración pública basada en evidencia.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="funciones">
+      <div class="section-head">
+        <div>
+          <h2>Lo que hace especial a este proyecto</h2>
+          <p>
+            No es solo un dashboard. Es una capa de inteligencia sobre proyectos de ley, plenarias
+            y actores legislativos, diseñada para recuperar, cruzar y visualizar información con mayor contexto.
+          </p>
+        </div>
+      </div>
+
+      <div class="feature-grid">
+        <article class="card feature">
+          <div class="icon">🔎</div>
+          <h3>Búsqueda semántica</h3>
+          <p>Recupera evidencia desde lenguaje natural usando embeddings y búsqueda vectorial.</p>
+        </article>
+        <article class="card feature">
+          <div class="icon">📊</div>
+          <h3>Visual analytics</h3>
+          <p>Muestra métricas, tendencias, rankings y señales interpretables del comportamiento legislativo.</p>
+        </article>
+        <article class="card feature">
+          <div class="icon">👤</div>
+          <h3>Explorar senadores</h3>
+          <p>Relaciona perfiles, temas, grafos y proyectos asociados a cada senador con una lectura más rica.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="capturas">
+      <div class="section-head">
+        <div>
+          <h2>Recorrido visual del sistema</h2>
+          <p>
+            Una vista más completa del flujo: búsqueda, interpretación, resultados por proyecto,
+            evidencias de plenaria y exploración centrada en senadores.
+          </p>
+        </div>
+      </div>
+
+      <div class="gallery">
+        <article class="card gallery-item">
+          <div class="media">
+            <img src="images/02_busqueda_form.png" alt="Formulario de búsqueda RAG">
+          </div>
+          <h3>Búsqueda semántica</h3>
+          <p>Entrada principal para consultar proyectos de ley y combinar evidencias de PL y plenaria.</p>
+        </article>
+
+        <article class="card gallery-item">
+          <div class="media">
+            <img src="images/03_metricas.png" alt="Métricas de resultados">
+          </div>
+          <h3>Métricas y lectura rápida</h3>
+          <p>Muestra volumen de evidencias, proximidad, confianza y contexto inicial de recuperación.</p>
+        </article>
+
+        <article class="card gallery-item">
+          <div class="media">
+            <img src="images/04_graficos.png" alt="Gráficos del tablero">
+          </div>
+          <h3>Tablero entendible</h3>
+          <p>Gráficos para ubicar secciones, top PLs y senadores más mencionados.</p>
+        </article>
+
+        <article class="card gallery-item">
+          <div class="media">
+            <img src="images/05_pl_cards.png" alt="Resultados por proyecto de ley">
+          </div>
+          <h3>Resultados por proyecto de ley</h3>
+          <p>Cards con confianza, evidencia, temas, secciones y senadores relacionados.</p>
+        </article>
+
+        <article class="card gallery-item wide tall">
+          <div class="media">
+            <img src="images/06_pl_detalle.png" alt="Detalle de proyecto de ley">
+          </div>
+          <h3>Detalle y mejor evidencia</h3>
+          <p>Presenta resumen del fragmento más fuerte y acceso al desglose completo por proyecto.</p>
+        </article>
+
+        <article class="card gallery-item">
+          <div class="media">
+            <img src="images/07_plenarias.png" alt="Evidencias de plenaria">
+          </div>
+          <h3>Evidencias de plenaria</h3>
+          <p>Asocia fechas, confianza y acceso a verificación en YouTube para contraste documental.</p>
+        </article>
+
+        <article class="card gallery-item">
+          <div class="media">
+            <img src="images/08_senador_perfil.png" alt="Perfil del senador">
+          </div>
+          <h3>Perfil de senador</h3>
+          <p>Integra imagen, partido, enlaces y descripción enriquecida del actor legislativo.</p>
+        </article>
+
+        <article class="card gallery-item">
+          <div class="media">
+            <img src="images/09_senador_grafo.png" alt="Mapa centrado en senador">
+          </div>
+          <h3>Mapa relacional</h3>
+          <p>Visualiza la relación entre el senador, temas y proyectos asociados.</p>
+        </article>
+
+        <article class="card gallery-item">
+          <div class="media">
+            <img src="images/10_senador_radar.png" alt="Radar temático">
+          </div>
+          <h3>Afinidad temática</h3>
+          <p>Radar y grafo para una lectura más interpretativa de la proximidad del senador a los temas.</p>
+        </article>
+
+        <article class="card gallery-item">
+          <div class="media">
+            <img src="images/11_senador_tabla.png" alt="Tabla de proyectos del senador">
+          </div>
+          <h3>Tabla de PLs asociados</h3>
+          <p>Tabla operativa de proyectos vinculados al senador desde roles enriquecidos.</p>
+        </article>
+
+        <article class="card gallery-item wide">
+          <div class="media">
+            <img src="images/13_sidebar.png" alt="Panel lateral de configuración">
+          </div>
+          <h3>Panel de configuración</h3>
+          <p>Permite ajustar corpus, embeddings, colecciones, modos de exploración y parámetros del sistema.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="arquitectura">
+      <div class="section-head">
+        <div>
+          <h2>Arquitectura funcional</h2>
+          <p>
+            El sistema transforma documentos legislativos en una interfaz de análisis, combinando
+            normalización documental, embeddings, indexación vectorial y visualización interactiva.
+          </p>
+        </div>
+      </div>
+
+      <div class="timeline">
+        <article class="card step">
+          <div class="step-num">1</div>
+          <h3>Ingesta</h3>
+          <p>Proyectos de ley, plenarias, metadatos y directorios de senadores.</p>
+        </article>
+        <article class="card step">
+          <div class="step-num">2</div>
+          <h3>Normalización</h3>
+          <p>Limpieza, estructuración y consolidación del corpus legislativo.</p>
+        </article>
+        <article class="card step">
+          <div class="step-num">3</div>
+          <h3>Embeddings</h3>
+          <p>Representación semántica de texto con modelos multilingües.</p>
+        </article>
+        <article class="card step">
+          <div class="step-num">4</div>
+          <h3>ChromaDB</h3>
+          <p>Persistencia vectorial y recuperación contextual de evidencias.</p>
+        </article>
+        <article class="card step">
+          <div class="step-num">5</div>
+          <h3>Exploración</h3>
+          <p>Interfaz Streamlit para consultar, interpretar y navegar resultados.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="stack">
+      <div class="section-head">
+        <div>
+          <h2>Stack tecnológico</h2>
+          <p>
+            Una combinación de infraestructura ligera, NLP y visualización aplicada al análisis legislativo.
+          </p>
+        </div>
+      </div>
+
+      <div class="stack">
+        <span>Streamlit</span>
+        <span>ChromaDB</span>
+        <span>Sentence Transformers</span>
+        <span>Pandas</span>
+        <span>NumPy</span>
+        <span>Scikit-learn</span>
+        <span>Plotly</span>
+        <span>Python</span>
+      </div>
+    </section>
+
+    <section>
+      <div class="cta">
+        <div class="section-head" style="margin-bottom:10px">
+          <div>
+            <h2>Proyecto orientado a impacto</h2>
+            <p>
+              Este repositorio no busca mostrar solo código. Busca evidenciar una aplicación real de IA
+              para análisis legislativo, transparencia, investigación y exploración documental estratégica.
+            </p>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:14px">
+          <a class="btn btn-primary" href="https://github.com/acatherinebusinessintelligence/senado-rag-dashboard" target="_blank" rel="noreferrer">
+            Abrir repositorio
+          </a>
+          <a class="btn btn-secondary" href="#vision">
+            Volver arriba
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">
+      Desarrollado por <strong>Alejandra Montaña</strong> · IA aplicada, infraestructura y analítica estratégica.
     </div>
-
-    <div class="card">
-      <h3>👤 Senadores</h3>
-      <p class="lead">Análisis completo por actor político.</p>
-    </div>
-
-  </div>
-</section>
-
-<!-- CAPTURAS -->
-<section id="capturas" class="wrap">
-
-  <h2>🔍 Recorrido del sistema</h2>
-
-  <div class="showcase">
-
-    <div class="shot">
-      <img src="images/02_busqueda_form.png">
-      <p>Formulario de búsqueda</p>
-    </div>
-
-    <div class="shot">
-      <img src="images/03_metricas.png">
-      <p>Métricas</p>
-    </div>
-
-    <div class="shot">
-      <img src="images/04_graficos.png">
-      <p>Gráficos</p>
-    </div>
-
-    <div class="shot">
-      <img src="images/05_pl_cards.png">
-      <p>Resultados PL</p>
-    </div>
-
-    <div class="shot">
-      <img src="images/06_pl_detalle.png">
-      <p>Detalle PL</p>
-    </div>
-
-    <div class="shot">
-      <img src="images/07_plenarias.png">
-      <p>Plenarias</p>
-    </div>
-
-    <div class="shot">
-      <img src="images/08_senador_perfil.png">
-      <p>Perfil senador</p>
-    </div>
-
-    <div class="shot">
-      <img src="images/09_senador_grafo.png">
-      <p>Grafo</p>
-    </div>
-
-    <div class="shot">
-      <img src="images/10_senador_radar.png">
-      <p>Radar</p>
-    </div>
-
-    <div class="shot">
-      <img src="images/11_senador_tabla.png">
-      <p>Tabla</p>
-    </div>
-
-    <div class="shot">
-      <img src="images/13_sidebar.png">
-      <p>Configuración</p>
-    </div>
+  </main>
+</body>
+</html>
 
   </div>
 
